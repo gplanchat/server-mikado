@@ -11,7 +11,28 @@ La méthode Mikado permet de structurer les refactorings et changements par peti
 
 ## Installation
 
+### Via GitHub (recommandé)
+
+Aucune installation locale nécessaire. Ajoutez dans `~/.cursor/mcp.json` :
+
+```json
+{
+  "mcpServers": {
+    "mikado": {
+      "command": "npx",
+      "args": ["-y", "github:gplanchat/server-mikado"]
+    }
+  }
+}
+```
+
+`npx` clone le dépôt, installe les dépendances et compile automatiquement au premier lancement.
+
+### Installation locale
+
 ```bash
+git clone git@github.com:gplanchat/server-mikado.git
+cd server-mikado
 npm install
 npm run build
 ```
@@ -52,37 +73,40 @@ L'interface web s'ouvre sur `http://localhost:6274`.
 
 ## Configuration Cursor
 
-Ajoutez dans `~/.cursor/mcp.json` :
+**Avec installation GitHub** (voir section Installation ci-dessus) :
 
 ```json
-{
-  "mcpServers": {
-    "mikado": {
-      "command": "node",
-      "args": ["/chemin/vers/mikado/dist/index.js"]
-    }
-  }
+"mikado": {
+  "command": "npx",
+  "args": ["-y", "github:gplanchat/server-mikado"]
 }
 ```
 
-Avec le chemin absolu du projet :
+**Avec installation locale** :
 
 ```json
 "mikado": {
   "command": "node",
-  "args": ["/home/gplanchat/PhpstormProjects/perso/mikado/dist/index.js"]
+  "args": ["/chemin/vers/server-mikado/dist/index.js"]
 }
 ```
 
 ## Stockage des données
 
-Par défaut, les données sont stockées dans `~/.mikado-mcp/data.json`.
+Les graphes sont isolés par projet :
 
-Pour personnaliser le chemin :
+1. **`MIKADO_DATA_PATH`** : si défini, ce chemin est utilisé (prioritaire)
+2. **Fallback** : `./.mikado/data.json` dans le dossier du projet (cwd)
+
+Quand Cursor lance le serveur MCP, le répertoire courant est le projet ouvert. Chaque projet a donc ses propres graphes dans `.mikado/data.json`.
+
+Pour forcer un chemin explicite :
 
 ```bash
 MIKADO_DATA_PATH=/chemin/vers/data.json node dist/index.js
 ```
+
+Vous pouvez ajouter `.mikado/` au `.gitignore` de vos projets si vous ne souhaitez pas versionner les graphes.
 
 ## Tools MCP
 
@@ -102,9 +126,13 @@ MIKADO_DATA_PATH=/chemin/vers/data.json node dist/index.js
 
 | URI | Description |
 |-----|-------------|
+| `mikado://guide` | **Méthode Mikado** : principes, workflow, quand l'utiliser |
+| `mikado://integration` | **Intégration agent** : guide pour agents IA (format règle Cursor / skill) |
 | `mikado://graph/{goalId}` | Graphe au format JSON |
 | `mikado://graph/{goalId}/mermaid` | Graphe en Mermaid |
 | `mikado://goals` | Liste des objectifs |
+
+Les resources `mikado://guide` et `mikado://integration` permettent aux agents de comprendre la méthode et de s'intégrer correctement, à l'image d'une règle Cursor ou d'un skill.
 
 ## Prompts MCP
 

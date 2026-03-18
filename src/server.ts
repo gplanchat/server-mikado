@@ -8,13 +8,17 @@ import { randomUUID } from 'crypto';
 import * as store from './store.js';
 import type { Goal, MikadoNode } from './model.js';
 import { graphToMermaid, getAvailableSteps } from './graph-utils.js';
+import { MIKADO_METHOD_GUIDE, AGENT_INTEGRATION_GUIDE } from './content/guide.js';
 
 export function createServer(): McpServer {
   const server = new McpServer(
     {
       name: 'mikado-mcp-server',
       version: '1.0.0',
-      description: 'Suivi des tâches selon la méthode Mikado pour refactoring et debug',
+      description:
+        'Suivi des tâches selon la méthode Mikado pour refactoring, migration et debug. ' +
+        'Structurer les changements par petites étapes expérimentales. ' +
+        'Lire mikado://guide pour la méthode, mikado://integration pour l\'intégration agent.',
     },
     { capabilities: { tools: {}, resources: {}, prompts: {} } }
   );
@@ -342,6 +346,32 @@ export function createServer(): McpServer {
         contents: [{ uri: 'mikado://goals', text: JSON.stringify({ goals }, null, 2) }],
       };
     }
+  );
+
+  server.registerResource(
+    'guide',
+    'mikado://guide',
+    {
+      mimeType: 'text/markdown',
+      description: 'Description de la méthode Mikado : principes, workflow, quand l\'utiliser',
+    },
+    async () => ({
+      contents: [{ uri: 'mikado://guide', mimeType: 'text/markdown', text: MIKADO_METHOD_GUIDE }],
+    })
+  );
+
+  server.registerResource(
+    'integration',
+    'mikado://integration',
+    {
+      mimeType: 'text/markdown',
+      description: 'Guide d\'intégration pour agents IA (règle Cursor / skill) : quand et comment utiliser le MCP Mikado',
+    },
+    async () => ({
+      contents: [
+        { uri: 'mikado://integration', mimeType: 'text/markdown', text: AGENT_INTEGRATION_GUIDE },
+      ],
+    })
   );
 
   // --- Prompts ---

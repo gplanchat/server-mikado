@@ -7,14 +7,43 @@ import path from 'path';
 import fs from 'fs';
 import type { Goal, MikadoNode, MikadoSchema } from './model.js';
 
-const defaultDataPath =
-  process.env.MIKADO_DATA_PATH ||
-  path.join(process.env.HOME || process.env.USERPROFILE || '.', '.mikado-mcp', 'data.json');
+function getDataPath(): string {
+  if (process.env.MIKADO_DATA_PATH) {
+    return process.env.MIKADO_DATA_PATH;
+  }
+  return path.join(process.cwd(), '.mikado', 'data.json');
+}
 
-function ensureDataDir() {
-  const dir = path.dirname(defaultDataPath);
+const MIKADO_README = `# Dossier Mikado
+
+Ce dossier contient les graphes de la [méthode Mikado](https://coach-agile.com/2022/01/la-methode-mikado/) pour ce projet.
+
+## Contenu
+
+- \`data.json\` : objectifs et expérimentations (graphe de dépendances)
+- Généré et utilisé par le serveur MCP Mikado
+
+## Méthode Mikado
+
+Structure les refactorings et changements par petites étapes expérimentales :
+- Objectif clair en bas du graphe
+- Expérimentations (étapes) avec prérequis
+- Valider les succès, annuler les échecs
+- Le projet reste toujours fonctionnel
+
+Installation du MCP : \`npx -y github:gplanchat/server-mikado\`
+`;
+
+function ensureDataDir(filePath: string) {
+  const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
+  }
+  if (!process.env.MIKADO_DATA_PATH) {
+    const readmePath = path.join(dir, 'README.md');
+    if (!fs.existsSync(readmePath)) {
+      fs.writeFileSync(readmePath, MIKADO_README, 'utf-8');
+    }
   }
 }
 
@@ -22,8 +51,9 @@ let db: Awaited<ReturnType<typeof JSONFilePreset<MikadoSchema>>> | null = null;
 
 async function getDb() {
   if (!db) {
-    ensureDataDir();
-    db = await JSONFilePreset<MikadoSchema>(defaultDataPath, {
+    const filePath = getDataPath();
+    ensureDataDir(filePath);
+    db = await JSONFilePreset<MikadoSchema>(filePath, {
       goals: [],
       nodes: [],
     });
